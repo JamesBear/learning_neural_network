@@ -5,8 +5,9 @@ import matplotlib.patches as mpatches
 import numpy as np
 import math
 
+inertia = 0.1
 step_size = 0.1
-iterations = 1000
+iterations = 200
 TRAIN_RATIO_INVERSE = 3 # inverse of 1/3 is 3
 file_name = 'moon_dataset_pairs3000_r10_w6_d-4.npy'
 ds = np.load(file_name)
@@ -70,6 +71,7 @@ class multilayer_perceptron:
         self.w = np.random.rand(hidden_layers+1, neurons_per_layer, neurons_per_layer)
         self.w[hidden_layers] = np.zeros([neurons_per_layer, neurons_per_layer])
         self.w[hidden_layers][0] = np.random.rand(neurons_per_layer)
+        self.last_delta_w = np.zeros([hidden_layers+1, neurons_per_layer, neurons_per_layer])
         self.o = np.zeros([hidden_layers+1, neurons_per_layer])
         self.sigma = self.o.copy()
         self.hidden_layers = hidden_layers
@@ -118,6 +120,22 @@ class multilayer_perceptron:
         print('Correct rate = {}%'.format(correct_rate * 100))
         return correct_rate
 
+    def show_decision_boundary(self, x_min, x_max, y_min, y_max):
+        X1 = np.linspace(x_min, x_max, 100)
+        X2 = np.linspace(y_min, y_max, 100)
+        b_x1 = []
+        b_x2 = []
+
+        for i in X1:
+            for j in X2:
+                y = self.forward([1, i, j])
+                if abs(y-0.5) < 0.1:
+                    b_x1.append(i)
+                    b_x2.append(j)
+        if len(b_x1) > 0:
+            plt.scatter(b_x1, b_x2, color='g')
+
+
     def backpropagation(self, X, Y, learning_rate):
         n_samples = len(Y)
         for sample in range(n_samples):
@@ -135,28 +153,16 @@ class multilayer_perceptron:
                         self.sigma[i, j] = self.sigma[i+1].dot(self.w[i+1][:,j]) * self.o[i, j] * (1 - self.o[i, j])
                     for k in range(self.neurons_per_layer):
                         if i == 0:
-                            self.w[i, j, k] -= learning_rate * x[k] * self.sigma[i, j]
+                            self.last_delta_w[i, j, k] = inertia*self.last_delta_w[i, j, k] + (1-inertia)*learning_rate * x[k] * self.sigma[i, j]
+                            self.w[i, j, k] -= self.last_delta_w[i, j, k]
                         else:
-                            self.w[i, j, k] -= learning_rate * self.o[i-1, k] * self.sigma[i, j]
-
-def visualize_xor():
-
-    x1 = np.array([0, 1])
-    x2 = np.array([0, 1])
-    for i in x1:
-        for j in x2:
-            if i != j:
-                cross = plt.scatter(i, j, marker='+', color='r')
-            else:
-                dot = plt.scatter(i, j, marker='o', color='b')
-
-    plt.title('Defining XOR using backpropagation')
-    plt.legend([cross, dot], ['True', 'False'])
-    plt.show()
+                            self.last_delta_w[i, j, k] = inertia*self.last_delta_w[i, j, k] + (1-inertia)*learning_rate * self.o[i-1, k] * self.sigma[i, j]
+                            self.w[i, j, k] -= self.last_delta_w[i, j, k]
 
 def main():
     print('iterations: ', iterations)
     print('step_size:' , step_size)
+    print('inertia:', inertia)
     mp = multilayer_perceptron(1, 3)
     dataset = train_ds
     N = len(dataset)
@@ -170,10 +176,9 @@ def main():
     print(mp)
     mp.test_accuracy(test_X, test_y)
 
-    #show_samples(train_ds)
-    #beta = run_least_mean_squares(train_ds)
-    #plt.show()
-    #score(beta, test_ds)
+    show_samples(train_ds)
+    mp.show_decision_boundary(-15, 25, -10, 15)
+    plt.show()
     input('Press enter to continue..')
 
 main()
