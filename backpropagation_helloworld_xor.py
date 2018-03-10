@@ -91,13 +91,13 @@ def visualize_xor():
     plt.show()
 
 iterations = 10000
-learning_rate = 0.1
+learning_rate = 1
 print('iterations: ', iterations)
 print('learning_rate:', learning_rate)
-mp = multilayer_perceptron(1, 2)
+mp = multilayer_perceptron(1, 3)
 for iteration in range(iterations):
-    mp.backpropagation(np.array([[0, 0], [0, 1], [1, 1], [1, 0]]), np.array([0, 1, 0, 1]), learning_rate)
+    mp.backpropagation(np.array([[1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 0]]), np.array([0, 1, 0, 1]), learning_rate)
 
-mp.test_accuracy(np.array([[0, 0], [0, 1], [1, 1], [1, 0]]), np.array([0, 1, 0, 1]))
+mp.test_accuracy(np.array([[1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 0]]), np.array([0, 1, 0, 1]))
 print(mp)
 #visualize_xor()
