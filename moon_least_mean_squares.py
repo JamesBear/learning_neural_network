@@ -5,7 +5,7 @@ import numpy as np
 step_size = 0.001
 iterations = 100
 TRAIN_RATIO_INVERSE = 3 # inverse of 1/3 is 3
-file_name = 'moon_dataset_pairs3000_r10_w6_d1.npy'
+file_name = 'moon_dataset_pairs3000_r10_w6_d-4.npy'
 ds = np.load(file_name)
 train_length = len(ds)//TRAIN_RATIO_INVERSE
 print('train_length = ', train_length)
