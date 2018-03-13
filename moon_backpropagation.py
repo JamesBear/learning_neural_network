@@ -73,8 +73,8 @@ def main():
     N = len(dataset)
     p = 3
     y = dataset[:,2:3]
-    X = np.append(np.ones([N, 1]), dataset[:,0:p-1], axis=1)
-    test_X = np.append(np.ones([len(test_ds), 1]), test_ds[:,0:p-1], axis=1)
+    X = dataset[:,0:p-1]
+    test_X = test_ds[:,0:p-1]
     test_y = test_ds[:,2:3]
     for iteration in range(iterations):
         mp.backpropagation(X, y, step_size)

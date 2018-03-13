@@ -25,9 +25,9 @@ print('learning_rate:', learning_rate)
 print('inertia:', inertia)
 mp = multilayer_perceptron(1, 3)
 for iteration in range(iterations):
-    mp.backpropagation(np.array([[1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 0]]), np.array([0, 1, 0, 1]), learning_rate)
+    mp.backpropagation(np.array([[0, 0], [0, 1], [1, 1], [1, 0]]), np.array([0, 1, 0, 1]), learning_rate)
 
-mp.test_accuracy(np.array([[1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 0]]), np.array([0, 1, 0, 1]), debug=True)
+mp.test_accuracy(np.array([[0, 0], [0, 1], [1, 1], [1, 0]]), np.array([0, 1, 0, 1]), debug=True)
 print(mp)
 visualize_xor(mp)
 #visualize_xor()

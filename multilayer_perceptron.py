@@ -8,11 +8,13 @@ learning_rate = 1
 
 class multilayer_perceptron:
     def __init__(self, hidden_layers, neurons_per_layer):
-        self.w = np.random.rand(hidden_layers+1, neurons_per_layer, neurons_per_layer)
-        self.w[hidden_layers] = np.zeros([neurons_per_layer, neurons_per_layer])
-        self.w[hidden_layers][0] = np.random.rand(neurons_per_layer)
-        self.last_delta_w = np.zeros([hidden_layers+1, neurons_per_layer, neurons_per_layer])
-        self.o = np.zeros([hidden_layers+1, neurons_per_layer])
+        self.w = np.random.rand(hidden_layers+1, neurons_per_layer+1, neurons_per_layer+1)
+        self.w[hidden_layers] = np.zeros([neurons_per_layer+1, neurons_per_layer+1])
+        self.w[hidden_layers][1] = np.random.rand(neurons_per_layer+1)
+        self.last_delta_w = np.zeros([hidden_layers+1, neurons_per_layer+1, neurons_per_layer+1])
+        self.o = np.zeros([hidden_layers+1, neurons_per_layer+1])
+        for i in range(hidden_layers+1):
+            self.o[i][0] = 1
         self.sigma = self.o.copy()
         self.hidden_layers = hidden_layers
         self.neurons_per_layer = neurons_per_layer
@@ -27,20 +29,34 @@ class multilayer_perceptron:
         return s
 
     def sigmoid(self, v):
-        return 1 / (1+math.exp(-v))
+        try:
+            return 1 / (1+math.exp(-v))
+        except OverflowError:
+            if v > 0:
+                return 1
+            else:
+                return 0
 
     def predict(self, Xs, Ys):
         Z = np.zeros(Xs.shape)
         for i in range(Xs.shape[0]):
             for j in range(Xs.shape[1]):
-                value = self.forward([1, Xs[i,j], Ys[i, j]])
+                value = self.forward([Xs[i,j], Ys[i, j]])
                 Z[i,j] = value
         return Z
 
+    def extend_input_x(self, x):
+        extended_x = np.zeros(self.neurons_per_layer+1)
+        extended_x[0] = 1
+        input_n = len(x)
+        extended_x[1:input_n+1] = x
+        return extended_x
+
     def forward(self, x, debug = False):
+        extended_x = self.extend_input_x(x)
         for i in range(self.hidden_layers+1):
-            for j in range(self.neurons_per_layer):
-                if i == self.hidden_layers and j > 0:
+            for j in range(1, self.neurons_per_layer+1):
+                if i == self.hidden_layers and j > 1:
                     break
                 if i == 0:
                     if debug:
@@ -48,10 +64,10 @@ class multilayer_perceptron:
                         print('type of x,', type(x))
                         print('type of x[1],', type(x[1]))
                         print('x: ', x)
-                    self.o[i, j] = self.sigmoid(self.w[i, j].dot(x))
+                    self.o[i, j] = self.sigmoid(self.w[i, j].dot(extended_x))
                 else:
                     self.o[i, j] = self.sigmoid(self.w[i, j].dot(self.o[i-1]))
-        return self.o[self.hidden_layers, 0]
+        return self.o[self.hidden_layers, 1]
 
     def classify(self, x, debug=False):
         c = int(self.forward(x) > 0.5)
@@ -85,19 +101,21 @@ class multilayer_perceptron:
         for sample in range(n_samples):
             x = X[sample]
             y = Y[sample]
+            #extended_x = np.insert(x, 0, 1, axis=0) # add 1 as first element
+            extended_x = self.extend_input_x(x)
             f = self.forward(x)
             #e = 0.5*(y-f)**2
             for i in range(self.hidden_layers, -1, -1):
-                for j in range(self.neurons_per_layer):
-                    if i == self.hidden_layers and j > 0:
+                for j in range(1,self.neurons_per_layer+1):
+                    if i == self.hidden_layers and j > 1:
                         break
                     if i == self.hidden_layers:
                         self.sigma[i, j] = (self.o[i, j]-y)*self.o[i, j]*(1-self.o[i, j])
                     else:
                         self.sigma[i, j] = self.sigma[i+1].dot(self.w[i+1][:,j]) * self.o[i, j] * (1 - self.o[i, j])
-                    for k in range(self.neurons_per_layer):
+                    for k in range(self.neurons_per_layer+1):
                         if i == 0:
-                            self.last_delta_w[i, j, k] = inertia*self.last_delta_w[i, j, k] + (1-inertia)*learning_rate * x[k] * self.sigma[i, j]
+                            self.last_delta_w[i, j, k] = inertia*self.last_delta_w[i, j, k] + (1-inertia)*learning_rate * extended_x[k] * self.sigma[i, j]
                             self.w[i, j, k] -= self.last_delta_w[i, j, k]
                         else:
                             self.last_delta_w[i, j, k] = inertia*self.last_delta_w[i, j, k] + (1-inertia)*learning_rate * self.o[i-1, k] * self.sigma[i, j]
