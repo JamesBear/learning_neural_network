@@ -96,6 +96,15 @@ class multilayer_perceptron:
             else:
                 return 1
 
+    def predict(self, Xs, Ys):
+        Z = np.zeros(Xs.shape)
+        for i in range(Xs.shape[0]):
+            for j in range(Xs.shape[1]):
+                value = self.forward([1, Xs[i,j], Ys[i, j]])
+                Z[i,j] = value
+        return Z
+
+
     def forward(self, x):
         for i in range(self.hidden_layers+1):
             for j in range(self.neurons_per_layer):
@@ -123,17 +132,10 @@ class multilayer_perceptron:
     def show_decision_boundary(self, x_min, x_max, y_min, y_max):
         X1 = np.linspace(x_min, x_max, 100)
         X2 = np.linspace(y_min, y_max, 100)
-        b_x1 = []
-        b_x2 = []
+        X, Y = np.meshgrid(X1, X2)
+        Z = self.predict(X, Y)
 
-        for i in X1:
-            for j in X2:
-                y = self.forward([1, i, j])
-                if abs(y-0.5) < 0.1:
-                    b_x1.append(i)
-                    b_x2.append(j)
-        if len(b_x1) > 0:
-            plt.scatter(b_x1, b_x2, color='g')
+        plt.contour(X, Y, Z, levels=[0.5])
 
 
     def backpropagation(self, X, Y, learning_rate):
