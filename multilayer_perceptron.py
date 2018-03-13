@@ -13,9 +13,9 @@ class multilayer_perceptron:
         self.w[hidden_layers][1] = np.random.rand(neurons_per_layer+1)
         self.last_delta_w = np.zeros([hidden_layers+1, neurons_per_layer+1, neurons_per_layer+1])
         self.o = np.zeros([hidden_layers+1, neurons_per_layer+1])
+        self.sigma = self.o.copy()
         for i in range(hidden_layers+1):
             self.o[i][0] = 1
-        self.sigma = self.o.copy()
         self.hidden_layers = hidden_layers
         self.neurons_per_layer = neurons_per_layer
 
