@@ -1,5 +1,8 @@
 
 from multilayer_perceptron import *
+inertia = 0.0
+iterations = 10000
+learning_rate = 1
 
 def visualize_xor(mp):
 
@@ -23,11 +26,15 @@ def visualize_xor(mp):
 print('iterations: ', iterations)
 print('learning_rate:', learning_rate)
 print('inertia:', inertia)
-mp = multilayer_perceptron(1, 3)
+initial_weights = np.array([0])
+mp = multilayer_perceptron(4, 3, random_scale = -3)
+print('layers*neurons: {}*{}'.format(mp.hidden_layers, mp.neurons_per_layer))
+X = np.array([[0, 0], [0, 1], [1, 1], [1, 0]])
+Y = np.array([0, 1, 0, 1])
 for iteration in range(iterations):
-    mp.backpropagation(np.array([[0, 0], [0, 1], [1, 1], [1, 0]]), np.array([0, 1, 0, 1]), learning_rate)
+    mp.backpropagation(X, Y, learning_rate)
 
-mp.test_accuracy(np.array([[0, 0], [0, 1], [1, 1], [1, 0]]), np.array([0, 1, 0, 1]), debug=True)
+mp.test_accuracy(X, Y, debug=True)
 print(mp)
 visualize_xor(mp)
 #visualize_xor()

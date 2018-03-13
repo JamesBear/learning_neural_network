@@ -7,10 +7,10 @@ iterations = 10000
 learning_rate = 1
 
 class multilayer_perceptron:
-    def __init__(self, hidden_layers, neurons_per_layer):
-        self.w = np.random.rand(hidden_layers+1, neurons_per_layer+1, neurons_per_layer+1)
+    def __init__(self, hidden_layers, neurons_per_layer, random_scale = 1):
+        self.w = np.random.rand(hidden_layers+1, neurons_per_layer+1, neurons_per_layer+1) * random_scale
         self.w[hidden_layers] = np.zeros([neurons_per_layer+1, neurons_per_layer+1])
-        self.w[hidden_layers][1] = np.random.rand(neurons_per_layer+1)
+        self.w[hidden_layers][1] = np.random.rand(neurons_per_layer+1) * random_scale
         self.last_delta_w = np.zeros([hidden_layers+1, neurons_per_layer+1, neurons_per_layer+1])
         self.o = np.zeros([hidden_layers+1, neurons_per_layer+1])
         self.sigma = self.o.copy()
@@ -18,6 +18,7 @@ class multilayer_perceptron:
             self.o[i][0] = 1
         self.hidden_layers = hidden_layers
         self.neurons_per_layer = neurons_per_layer
+        self.random_scale = random_scale
 
     def __str__(self):
         s = ''
@@ -28,7 +29,10 @@ class multilayer_perceptron:
         s += str(self.sigma)
         return s
 
-    def sigmoid(self, v):
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+
+    def sigmoid2(self, v):
         try:
             return 1 / (1+math.exp(-v))
         except OverflowError:
